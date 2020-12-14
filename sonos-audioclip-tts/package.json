@@ -4,20 +4,21 @@
   "private": true,
   "dependencies": {
     "async": "^3.2.0",
-    "google-tts-api": "0.0.4",
-    "node-persist": "^3.0.1",
-    "simple-oauth2": "^2.2.1"
+    "google-tts-api": "^2.0.0",
+    "node-fetch": "^2.6.1",
+    "node-persist": "^3.1.0",
+    "simple-oauth2": "^4.2.0"
   },
   "scripts": {
     "server": "node server | pino-colada"
   },
   "devDependencies": {
-    "body-parser": "^1.18.3",
-    "express": "^4.16.3",
-    "express-pino-logger": "^4.0.0",
-    "node-env-run": "^3.0.2",
-    "nodemon": "^1.18.4",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-pino-logger": "^5.0.0",
+    "node-env-run": "^4.0.2",
+    "nodemon": "^2.0.6",
     "npm-run-all": "^4.1.5",
-    "pino-colada": "^1.4.4"
+    "pino-colada": "^2.1.0"
   }
 }

@@ -25,12 +25,13 @@ The MIT License (MIT)
 const express = require('express');
 const bodyParser = require('body-parser');
 const pino = require('express-pino-logger')();
-const simpleOauthModule = require('simple-oauth2');
+const { AuthorizationCode } = require('simple-oauth2');
 const googleTTS = require('google-tts-api');
 const storage = require('node-persist');
 const fs = require('fs');
 const async = require('async');
 const os = require('os');
+const fetch = require('node-fetch');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -42,10 +43,6 @@ let config = JSON.parse(rawconfig);
 
 console.log("Starting with configuration:", config)
 
-// Let's initialize our local storage to keep the auth token
-// This way we don't have to log in every time the app restarts
-storage.init({ dir: '../../data/persist/' });
-
 const localUrl = config.LOCAL_URL ? config.LOCAL_URL : os.hostname()
 const port = config.PORT ? config.PORT : '8349'
 
@@ -54,7 +51,7 @@ const baseUrlRedirect = 'https://' + localUrl + ':' + port
 
 
 // This section services the OAuth2 flow
-const oauth2 = simpleOauthModule.create({
+const oauthConfig = {
   client: {
     id: config.SONOS_CLIENT_ID,
     secret: config.SONOS_CLIENT_SECRET,
@@ -64,10 +61,12 @@ const oauth2 = simpleOauthModule.create({
     tokenPath: '/login/v3/oauth/access',
     authorizePath: '/login/v3/oauth',
   },
-});
+};
+const client = new AuthorizationCode(oauthConfig);
+
 
 // Authorization uri definition
-const authorizationUri = oauth2.authorizationCode.authorizeURL({
+const authorizationUri = client.authorizeURL({
   redirect_uri: baseUrlRedirect + '/redirect',
   scope: 'playback-control-all',
   state: 'none',
@@ -80,21 +79,30 @@ let authRequired = false; // We'll use this to keep track of when auth is needed
 
 // This is a function we run when we first start the app. It gets the token from the local store, or sets authRequired if it's unable to
 async function getToken() {
+  if (!storage.getItem) {
+    // Let's initialize our local storage to keep the auth token
+    // This way we don't have to log in every time the app restarts
+    await storage.init({ dir: '../../data/persist/' });
+  }
   const currentToken = await storage.getItem('token');
   if (currentToken === undefined) {
     authRequired = true;
     return;
   }
-  token = oauth2.accessToken.create(currentToken.token);
+  try {
+    token = await client.getToken(currentToken.token);
 
-  if (token.expired()) {
-    try {
-      token = await token.refresh();
-      await storage.setItem('token', token); // And save it to local storage to capture the new access token and expiry date
-    } catch (error) {
-      authRequired = true;
-      console.log('Error refreshing access token: ', error.message);
+    if (token.expired()) {
+      try {
+        token = await token.refresh();
+        await storage.setItem('token', token); // And save it to local storage to capture the new access token and expiry date
+      } catch (error) {
+        authRequired = true;
+        console.log('Error refreshing access token: ', error.message);
+      }
     }
+  } catch (error) {
+    console.log('Access Token Error', error.message);
   }
 }
 
@@ -186,11 +194,11 @@ app.get('/redirect', async (req, res) => {
   };
 
   try {
-    const result = await oauth2.authorizationCode.getToken(options);
+    const result = await client.getToken(options);
 
     console.log('The resulting token: ', result);
 
-    token = oauth2.accessToken.create(result); // Save the token for use in Sonos API calls
+    token = client.createToken(result); // Save the token for use in Sonos API calls
 
     await storage.setItem('token', token); // And save it to local storage for use the next time we start the app
     authRequired = false; // And we're all good now. Don't need auth any more
@@ -336,7 +344,7 @@ app.get('/api/speakText', async (req, res) => {
   let speechUrl;
 
   try { // Let's make a call to the google tts api and get the url for our TTS file
-    speechUrl = await googleTTS(text, config.GOOGLE_TTS_LANGUAGE, 1);
+    speechUrl = googleTTS.getAudioUrl(text, config.GOOGLE_TTS_LANGUAGE, 1);
   }
   catch (err) {
     speakTextRes.send(JSON.stringify({ 'success': false, error: err.stack }));
