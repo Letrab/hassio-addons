@@ -20,7 +20,7 @@ If you're not using HASS.IO scroll down and check out the Non HASS.IO install st
 
 ### Install the Add On
 
-Add this `https://github.com/kevinvincent/hassio-addons` as a custom repository as usual and click install under this addon.
+Add this `https://github.com/letrab/hassio-addons` as a custom repository as usual and click install under this addon.
 
 NOTE: This addon is a local build addon. That means that Home Assistant will build the addon image on your HA machine so installation might take awhile.
 
@@ -138,7 +138,7 @@ You can play arbitrary audio files using `http://hassio.local:8349/api/playClip?
 You can play arbitrary audio files on all devices using `http://hassio.local:8349/api/playClipAll?streamUrl=<filename.mp3>&volume=<0 - 100>`
 
 You can exclude one or more rooms by specifying the `exclude` parameter using `http://hassio.local:8349/api/playClipAll?streamUrl=<filename.mp3>&exclude=Living Room&exclude=Bathroom`
- 
+
 I recommend starting with volumes between 20 - 30 and working your way up in increments of 5. 100 is very very loud.
 
 To all requests the parameter `prio` can be added. This can be low `&prio=low` or high `&prio=high`:
