@@ -47,8 +47,7 @@ const localUrl = config.LOCAL_URL ? config.LOCAL_URL : os.hostname()
 const port = config.PORT ? config.PORT : '8349'
 
 const baseUrl = 'http://' + localUrl + ':' + port
-const baseUrlRedirect = 'https://' + localUrl + ':' + port
-
+const baseUrlRedirect = localUrl === "localhost" ? 'http://' + localUrl + ':' + port : 'https://' + localUrl + ':' + port
 
 // This section services the OAuth2 flow
 const oauthConfig = {
@@ -90,7 +89,7 @@ async function getToken() {
     return;
   }
   try {
-    token = await client.getToken(currentToken.token);
+    token = client.createToken(currentToken.token);
 
     if (token.expired()) {
       try {
@@ -196,9 +195,9 @@ app.get('/redirect', async (req, res) => {
   try {
     const result = await client.getToken(options);
 
-    console.log('The resulting token: ', result);
-
     token = client.createToken(result); // Save the token for use in Sonos API calls
+
+    console.log('The resulting token: ', token);
 
     await storage.setItem('token', token); // And save it to local storage for use the next time we start the app
     authRequired = false; // And we're all good now. Don't need auth any more
@@ -217,7 +216,7 @@ app.get('/api/allClipCapableDevices', async (req, res) => {
 
   // Let's try to immediately convert that text to JSON,
   try {
-    if (json.households !== undefined) { // if there's a households object, things went well, and we'll return that array of hhids
+    if (json && json.households !== undefined) { // if there's a households object, things went well, and we'll return that array of hhids
       const allClipCapableDevices = await parseClipCapableDevices(json.households)
       res.send(JSON.stringify({ 'success': true, 'households': allClipCapableDevices }, null, '\t'));
     }
@@ -227,7 +226,7 @@ app.get('/api/allClipCapableDevices', async (req, res) => {
   }
   catch (err) {
     console.log(err)
-    res.send(JSON.stringify({ 'success': false, 'error': hhResultText }));
+    res.send(JSON.stringify({ 'success': false, 'error': err }));
   }
 
 });
