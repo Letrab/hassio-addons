@@ -23,6 +23,7 @@ The MIT License (MIT)
  SOFTWARE.
  */
 const express = require('express');
+var serveIndex = require('serve-index');
 const bodyParser = require('body-parser');
 const pino = require('express-pino-logger')();
 const { AuthorizationCode } = require('simple-oauth2');
@@ -33,7 +34,7 @@ const async = require('async');
 const os = require('os');
 const fetch = require('node-fetch');
 
-const app = express();
+const app = require("https-localhost")()
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(pino);
 
@@ -46,8 +47,7 @@ console.log("Starting with configuration:", config)
 const localUrl = config.LOCAL_URL ? config.LOCAL_URL : os.hostname()
 const port = config.PORT ? config.PORT : '8349'
 
-const baseUrl = 'http://' + localUrl + ':' + port
-const baseUrlRedirect = localUrl === "localhost" ? 'http://' + localUrl + ':' + port : 'https://' + localUrl + ':' + port
+const baseUrl = 'https://' + localUrl + ':' + port
 
 // This section services the OAuth2 flow
 const oauthConfig = {
@@ -66,7 +66,7 @@ const client = new AuthorizationCode(oauthConfig);
 
 // Authorization uri definition
 const authorizationUri = client.authorizeURL({
-  redirect_uri: baseUrlRedirect + '/redirect',
+  redirect_uri: baseUrl + '/redirect',
   scope: 'playback-control-all',
   state: 'none',
 });
@@ -186,7 +186,7 @@ app.get('/auth', async (req, res) => {
 // redirect service parsing the authorization token and asking for the access token
 app.get('/redirect', async (req, res) => {
   const code = req.query.code;
-  const redirect_uri = baseUrlRedirect + '/redirect';
+  const redirect_uri = baseUrl + '/redirect';
 
   const options = {
     code, redirect_uri,
@@ -455,7 +455,9 @@ app.get('/api/playClipAll', async (req, res) => {
   );
 });
 
-app.listen(port, () =>
+const server = app.listen(port);
+if (server) {
   console.log('Express server is running on ' + baseUrl)
-);
+}
+app.use('/mp3', serveIndex('../../data/mp3'));
 app.use('/mp3', express.static('../../data/mp3'))

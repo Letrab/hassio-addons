@@ -22,7 +22,7 @@ If you're not using HASS.IO scroll down and check out the Non HASS.IO install st
 
 Add this `https://github.com/letrab/hassio-addons` as a custom repository as usual and click install under this addon.
 
-NOTE: This addon is a local build addon. That means that Home Assistant will build the addon image on your HA machine so installation might take awhile.
+NOTE: This addon is a local build addon. That means that Home Assistant will build the addon image on your HA machine so installation might take a while.
 
 ### Create API Key
 
@@ -110,34 +110,34 @@ If you see the error _invalid_request_, you did not configure the correct URL in
 
 ## Usage
 
-As you have noticed by now, this is very different than the built-in TTS in Home Assistant. Basically at this point, you have a webserver running at `http://hassio.local:8349` that you can make requests to.
+As you have noticed by now, this is very different than the built-in TTS in Home Assistant. Basically at this point, you have a webserver running at `https://hassio.local:8349` that you can make requests to.
 
-First visit `http://hassio.local:8349/api/allClipCapableDevices`
+First visit `https://hassio.local:8349/api/allClipCapableDevices`
 
 This will list all devices in your SONOS household that the SONOS API says support playing audio clips. Copy the ID's of devices to which you may want to play TTS messages on.
 
 NOTE: For some reason if devices are grouped together (stereo pair for example), only one will show up here though TTS works on both. This is an issue with the SONOS API but I have a workaround in mind. Its not a big deal though since the speakers will usually be in close proximity if paired that way.
 
-You can play Google TTS announcements by visiting (from your browser or through a GET request from NODE-RED, CURL, rest_command in HA) `http://hassio.local:8349/api/speakText?playerId=<playerID>&text=<text>&volume=<0 - 100>`
+You can play Google TTS announcements by visiting (from your browser or through a GET request from NODE-RED, CURL, rest_command in HA) `https://hassio.local:8349/api/speakText?playerId=<playerID>&text=<text>&volume=<0 - 100>`
 
-You can play arbitrary audio files using `http://hassio.local:8349/api/playClip?playerId=<playerID>&streamUrl=<url>&volume=<0 - 100>`
+You can play arbitrary audio files using `https://hassio.local:8349/api/playClip?playerId=<playerID>&streamUrl=<url>&volume=<0 - 100>`
 
-You can play arbitrary audio files on all devices using `http://hassio.local:8349/api/playClipAll?streamUrl=<url>&volume=<0 - 100>`
+You can play arbitrary audio files on all devices using `https://hassio.local:8349/api/playClipAll?streamUrl=<url>&volume=<0 - 100>`
 
 You can play an internal chime / doorbell sound by omitting the `streamUrl` parameter from the links above:
 
-Play chime using `http://hassio.local:8349/api/playClip?playerId=<playerID>&volume=<0 - 100>`
+Play chime using `https://hassio.local:8349/api/playClip?playerId=<playerID>&volume=<0 - 100>`
 
-Play chime on all devices using `http://hassio.local:8349/api/playClipAll?volume=<0 - 100>`
+Play chime on all devices using `https://hassio.local:8349/api/playClipAll?volume=<0 - 100>`
 
 To play a local file, create a folder `mp3` in the `data` folder (next to `hassio-addons`) and place your media files here (eg: `filename.mp3`).
 Pass the filename as a parameter to the streamUrl:
 
-You can play arbitrary audio files using `http://hassio.local:8349/api/playClip?playerId=<playerID>&streamUrl=<filename.mp3>&volume=<0 - 100>`
+You can play arbitrary audio files using `https://hassio.local:8349/api/playClip?playerId=<playerID>&streamUrl=<filename.mp3>&volume=<0 - 100>`
 
-You can play arbitrary audio files on all devices using `http://hassio.local:8349/api/playClipAll?streamUrl=<filename.mp3>&volume=<0 - 100>`
+You can play arbitrary audio files on all devices using `https://hassio.local:8349/api/playClipAll?streamUrl=<filename.mp3>&volume=<0 - 100>`
 
-You can exclude one or more rooms by specifying the `exclude` parameter using `http://hassio.local:8349/api/playClipAll?streamUrl=<filename.mp3>&exclude=Living Room&exclude=Bathroom`
+You can exclude one or more rooms by specifying the `exclude` parameter using `https://hassio.local:8349/api/playClipAll?streamUrl=<filename.mp3>&exclude=Living Room&exclude=Bathroom`
 
 I recommend starting with volumes between 20 - 30 and working your way up in increments of 5. 100 is very very loud.
 
